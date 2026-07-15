@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คู่มือการใช้งาน BOP Express</title>
+<style>
+  :root{
+    --bg:#f5f6fa; --card:#ffffff; --ink:#1f2430; --muted:#5b6472;
+    --line:#e4e7ee; --brand:#4f46e5; --brand-soft:#eef0ff;
+    --ok:#059669; --ok-soft:#e7f6ef; --warn:#b45309; --warn-soft:#fdf1e3;
+    --err:#dc2626; --err-soft:#fdeaea; --info:#0369a1; --info-soft:#e7f2fb;
+    --radius:12px; --maxw:1000px;
+    --sidebar:280px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI","Sarabun","Leelawadee UI",Tahoma,system-ui,sans-serif;
+    line-height:1.65; font-size:16px;
+  }
+  a{color:var(--brand); text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{background:#eef0f4; padding:1px 6px; border-radius:5px; font-size:.9em; color:#3b3f52}
+
+  /* Layout */
+  .wrap{display:flex; gap:0; align-items:flex-start}
+  .toc{
+    width:var(--sidebar); flex:0 0 var(--sidebar); position:sticky; top:0; height:100vh;
+    overflow-y:auto; background:#12162a; color:#c7ccdb; padding:22px 18px;
+  }
+  .toc .brand{display:flex; align-items:center; gap:10px; margin-bottom:6px}
+  .toc .logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#4338ca);
+    display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;letter-spacing:.5px}
+  .toc .brand b{color:#fff;font-size:15px;display:block;line-height:1.2}
+  .toc .brand span{font-size:11px;color:#8b93ab}
+  .toc h4{color:#7f88a3; font-size:11px; letter-spacing:.14em; text-transform:uppercase; margin:20px 0 8px}
+  .toc a{display:block; color:#c7ccdb; padding:5px 10px; border-radius:7px; font-size:13.5px}
+  .toc a:hover{background:#1c2138; color:#fff; text-decoration:none}
+  .toc a.err::after{content:" ⚠"; color:#f59e0b}
+
+  .main{flex:1 1 auto; min-width:0; padding:0}
+  .container{max-width:var(--maxw); margin:0 auto; padding:34px 30px 90px}
+
+  header.hero{
+    background:linear-gradient(135deg,#4f46e5,#3730a3); color:#fff; padding:44px 30px;
+  }
+  header.hero .inner{max-width:var(--maxw); margin:0 auto}
+  header.hero h1{margin:0 0 8px; font-size:30px}
+  header.hero p{margin:2px 0; color:#dfe1fb}
+  .pill{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);
+    padding:3px 11px;border-radius:999px;font-size:12.5px;margin:8px 6px 0 0}
+
+  section{margin-top:14px}
+  h2.group{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);
+    margin:38px 0 6px;padding-top:10px;border-top:2px solid var(--line)}
+  h3{font-size:22px;margin:26px 0 4px;scroll-margin-top:16px}
+  h3 .num{color:var(--brand);font-weight:800;margin-right:6px}
+  .lead{color:var(--muted);margin:2px 0 14px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 22px;margin:14px 0;box-shadow:0 1px 2px rgba(20,24,45,.04)}
+
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .tag{font-size:12px;padding:3px 10px;border-radius:999px;background:#f0f1f6;color:#4a5063;border:1px solid var(--line)}
+  .tag.url{font-family:ui-monospace,Consolas,monospace;background:#f7f8fc}
+
+  ol.steps{margin:8px 0 8px;padding-left:20px}
+  ol.steps li{margin:5px 0}
+  ul.fields{list-style:none;padding:0;margin:10px 0}
+  ul.fields li{padding:7px 0;border-bottom:1px dashed var(--line)}
+  ul.fields li:last-child{border-bottom:0}
+  ul.fields b{color:#2a2f3e}
+  .req{color:var(--err);font-weight:700}
+
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;margin:0 3px 3px 0}
+  .b-grey{background:#eceef3;color:#5b6472}
+  .b-blue{background:#e3edfd;color:#1d4ed8}
+  .b-green{background:var(--ok-soft);color:var(--ok)}
+  .b-yellow{background:#fdf3d6;color:#a16207}
+  .b-red{background:var(--err-soft);color:var(--err)}
+
+  .callout{border-radius:10px;padding:12px 16px;margin:12px 0;border:1px solid;font-size:14.5px}
+  .callout b{display:block;margin-bottom:2px}
+  .c-note{background:var(--info-soft);border-color:#bfe0f5;color:#0b4f78}
+  .c-tip{background:var(--ok-soft);border-color:#bfe6d3;color:#0a6b48}
+  .c-warn{background:var(--warn-soft);border-color:#f2d3a6;color:#8a4b09}
+  .c-err{background:var(--err-soft);border-color:#f3c3c3;color:#a51f1f}
+
+  /* image placeholder */
+  figure.shot{margin:16px 0}
+  figure.shot img{max-width:100%;border:1px solid var(--line);border-radius:10px;display:block;
+    box-shadow:0 2px 10px rgba(20,24,45,.08)}
+  figure.shot .ph{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    min-height:150px;border:2px dashed #c3c9d8;border-radius:10px;background:
+    repeating-linear-gradient(45deg,#fafbfe,#fafbfe 12px,#f2f4fa 12px,#f2f4fa 24px);
+    color:#8891a6;text-align:center;padding:20px}
+  figure.shot .ph .ic{font-size:26px}
+  figure.shot .ph .fn{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:#5b6472;
+    background:#fff;border:1px solid var(--line);padding:2px 8px;border-radius:6px}
+  figcaption{color:var(--muted);font-size:13px;margin-top:7px;text-align:center}
+
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px;background:#fff}
+  table th,table td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  table th{background:#f3f4f9;font-weight:700;color:#3a3f52}
+  table td.mono{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:nowrap}
+  .scroll{overflow-x:auto}
+
+  footer{max-width:var(--maxw);margin:0 auto;padding:24px 30px 60px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+
+  .toggle{display:none}
+  @media(max-width:860px){
+    .toc{position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 40px rgba(0,0,0,.3)}
+    .toc.open{transform:translateX(0)}
+    .toggle{display:inline-flex;position:fixed;z-index:60;top:12px;left:12px;background:var(--brand);color:#fff;
+      border:0;border-radius:9px;padding:9px 13px;font-size:14px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+    .container{padding:20px 16px 80px}
+    header.hero{padding:60px 18px 30px}
+  }
+  @media print{
+    .toc,.toggle{display:none}
+    body{background:#fff;font-size:12pt}
+    .card{break-inside:avoid;box-shadow:none}
+    figure.shot{break-inside:avoid}
+    header.hero{background:#4f46e5 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+<button class="toggle" onclick="document.getElementById('toc').classList.toggle('open')">☰ สารบัญ</button>
+<div class="wrap">
+<nav class="toc" id="toc">
+  <div class="brand"><div class="logo">BOP</div><div><b>BOP Express</b><span>คู่มือการใช้งาน</span></div></div>
+  <a href="#intro">ภาพรวม &amp; การเข้าสู่ระบบ</a>
+  <a href="#workflow">ขั้นตอนการทำงานหลัก</a>
+
+  <h4>Operations</h4>
+  <a href="#op-dashboard">1. Dashboard</a>
+  <a href="#op-crm">2. CRM Dashboard</a>
+  <a href="#op-customers">3. CRM Customers</a>
+  <a href="#op-inquiry">4. Inquiry Pipeline</a>
+  <a href="#op-quotations">5. Quotations</a>
+  <a href="#op-qactivities">6. Quotation Activities</a>
+  <a href="#op-so">7. Sales Orders</a>
+  <a href="#op-si">8. Sales Invoices</a>
+  <a href="#op-jobs">9. Shipment Jobs</a>
+  <a href="#op-reports">10. Reports</a>
+
+  <h4>Finance</h4>
+  <a href="#fin-expenses">11. Expenses (OCR)</a>
+  <a href="#fin-tax">12. Tax Documents</a>
+  <a href="#fin-intake">13. เบิกเงิน</a>
+  <a href="#fin-approve">14. อนุมัติเงิน</a>
+  <a href="#fin-disburse">15. จ่ายเงิน</a>
+  <a href="#fin-settle">16. เคลียร์เงิน</a>
+  <a href="#fin-shipexp">17. Shipment Expenses</a>
+  <a href="#fin-register">18. ทะเบียนเบิกเงิน</a>
+  <a href="#fin-shipinv">19. Shipment Invoices</a>
+
+  <h4>Master Data</h4>
+  <a href="#md-customers">20. Customers</a>
+  <a href="#md-suppliers">21. Suppliers</a>
+  <a href="#md-servicegroups">22. Service Groups</a>
+  <a href="#md-products">23. Products &amp; Services</a>
+  <a href="#md-costtypes">24. Cost Types</a>
+  <a href="#md-lines">25. Shipping Lines</a>
+  <a href="#md-ports">26. Ports</a>
+  <a href="#md-doctypes">27. Document Types</a>
+  <a href="#md-containers">28. Container Types</a>
+  <a href="#md-jobstatus">29. Job Statuses</a>
+  <a href="#md-customsstatus">30. Customs Statuses</a>
+
+  <h4>Administration</h4>
+  <a href="#adm-users">31. Users</a>
+  <a href="#adm-roles">32. Roles</a>
+  <a href="#adm-system">33. System Settings</a>
+  <a href="#adm-docstatus">34. Document Statuses</a>
+  <a href="#adm-audit">35. Audit Logs</a>
+
+  <h4>ภาคผนวก</h4>
+  <a href="#shotlist">รายการรูปที่ต้องถ่าย (Shot list)</a>
+</nav>
+
+<div class="main">
+<header class="hero"><div class="inner">
+  <h1>คู่มือการใช้งานระบบ BOP Express</h1>
+  <p>Operations Workspace — งานขาย, ชิปเมนต์, การเงิน และการดูแลระบบ ในที่เดียว</p>
+  <p style="opacity:.85;font-size:14px">URL ระบบ: https://bopexpress.online/backend</p>
+  <div>
+    <span class="pill">35 เมนู</span>
+    <span class="pill">4 หมวดงาน</span>
+    <span class="pill">ปรับปรุง: 15 ก.ค. 2569</span>
+  </div>
+</div></header>
+
+<div class="container">
+
+<!-- INTRO -->
+<section id="intro">
+<h2 class="group">เริ่มต้น</h2>
+<h3>ภาพรวมระบบ &amp; การเข้าสู่ระบบ</h3>
+<p class="lead">BOP Express เป็นระบบบริหารงานขนส่งสินค้าระหว่างประเทศ (freight forwarding) แบบครบวงจร ครอบคลุมตั้งแต่การเสนอราคา → เปิดงานชิปเมนต์ → จัดการเอกสาร/พิธีการศุลกากร → การเงิน/เบิกจ่าย → ออกใบแจ้งหนี้และเอกสารภาษี</p>
+
+<div class="card">
+<b>การเข้าสู่ระบบ</b>
+<ol class="steps">
+<li>เปิดเบราว์เซอร์ไปที่ <code>https://bopexpress.online/backend/login</code></li>
+<li>กรอกอีเมล/ชื่อผู้ใช้ และรหัสผ่านของคุณ แล้วกดเข้าสู่ระบบ</li>
+<li>เมื่อเข้าสำเร็จจะพบ <b>Operations Dashboard</b> เป็นหน้าแรก</li>
+</ol>
+<ul class="fields">
+<li><b>เมนูด้านซ้าย</b> แบ่งเป็น 4 หมวด: OPERATIONS, FINANCE, MASTER DATA, ADMINISTRATION (กดปุ่มลูกศรบนแถบเมนูเพื่อย่อ/ขยายได้)</li>
+<li><b>มุมขวาบน</b> แสดงชื่อผู้ใช้และบทบาท (เช่น Super Admin) พร้อมปุ่ม <b>Profile</b> และ <b>Logout</b></li>
+<li><b>วันที่</b> ในเอกสารส่วนใหญ่แสดงเป็น พ.ศ. (เช่น 15/07/2569)</li>
+</ul>
+</div>
+
+<div class="callout c-note">
+<b>โมดูล CRM (ภาษาไทย)</b>
+หน้าในกลุ่ม CRM (แดชบอร์ด CRM, ทะเบียนลูกค้า CRM, กระบวนการขาย) เป็นส่วนที่พัฒนาใหม่ ใช้ภาษาไทยเป็นหลัก
+และมีปุ่มสลับภาษา <b>TH / EN</b> ที่มุมขวาบนของแต่ละหน้า
+</div>
+</section>
+
+<!-- WORKFLOW -->
+<section id="workflow">
+<h3>ขั้นตอนการทำงานหลัก (Workflow)</h3>
+<p class="lead">ลำดับงานหลักของระบบเชื่อมโยงกันดังนี้</p>
+<div class="card">
+<ol class="steps">
+<li><b>ใบเสนอราคา (Quotation)</b> — สร้างใบเสนอราคาให้ลูกค้า ระบุประเภทงานและรายการค่าบริการ</li>
+<li><b>Quotation Activities</b> — ใส่รายละเอียดต้นทุน/กิจกรรมย่อย แล้ว <b>ส่งอนุมัติ</b></li>
+<li><b>ใบสั่งขาย (Sales Order)</b> — สร้างจากใบเสนอราคาที่อนุมัติแล้ว</li>
+<li><b>งานชิปเมนต์ (Shipment Job)</b> — เปิดงานจากใบเสนอราคาที่อนุมัติ จัดการเอกสาร ตู้ พิธีการศุลกากร</li>
+<li><b>การเงิน (เบิกเงินทดรอง)</b> — เบิกเงิน → อนุมัติเงิน → จ่ายเงิน → เคลียร์เงิน และบันทึก Shipment Expenses</li>
+<li><b>ออกใบแจ้งหนี้</b> — Sales Invoices / Shipment Invoices แล้วออกใบเสร็จ/ใบกำกับภาษี (Tax Documents)</li>
+</ol>
+<p style="margin:6px 0 0;color:var(--muted);font-size:14px"><b>Master Data</b> เป็นข้อมูลตั้งต้นที่ป้อนให้ dropdown ทุกหน้า (ลูกค้า, ผู้ขาย, สินค้า/บริการ, ท่าเรือ ฯลฯ) และ <b>Administration</b> ควบคุมผู้ใช้/สิทธิ์/สถานะ/การตั้งค่าระบบ</p>
+</div>
+</section>
+
+<!-- ===================== OPERATIONS ===================== -->
+<h2 class="group">หมวด Operations</h2>
+
+<h3 id="op-dashboard"><span class="num">1.</span>Dashboard</h3>
+<div class="meta"><span class="tag url">/backend/dashboard</span><span class="tag">ภาพรวมงาน</span></div>
+<p class="lead">หน้าสรุปภาพรวมงานปฏิบัติการ (Operations Dashboard) เห็นสถานะงานสำคัญได้ในหน้าเดียว</p>
+<div class="card">
+<b>สิ่งที่แสดง</b>
+<ul class="fields">
+<li><b>การ์ดตัวเลข (KPI):</b> ALL JOBS, IMPORT, EXPORT, ETA IN 3 DAYS, MISSING DOCUMENTS, CUSTOMS PENDING</li>
+<li><b>ปุ่ม Open Shipment Workspace</b> — เข้าสู่พื้นที่จัดการงานชิปเมนต์</li>
+<li><b>Latest Documents</b> — เอกสารที่อัปโหลดล่าสุด (Job No / Type / File) พร้อมลิงก์ <i>Missing docs report</i></li>
+<li><b>Latest Status Changes</b> — การเปลี่ยนสถานะล่าสุด พร้อมลิงก์ <i>Audit log</i></li>
+</ul>
+</div>
+<figure class="shot">
+  <img src="images/op-01-dashboard.png" alt="Operations Dashboard" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-01-dashboard.png</div></div>
+  <figcaption>รูปที่ 1 — หน้า Operations Dashboard</figcaption>
+</figure>
+
+<h3 id="op-crm"><span class="num">2.</span>CRM Dashboard — แดชบอร์ด CRM</h3>
+<div class="meta"><span class="tag url">/backend/crm</span><span class="tag">CRM</span></div>
+<p class="lead">ภาพรวมกระบวนการขายและงานติดตาม — สรุปสถานะ Inquiry (โอกาสการขาย) ทั้งหมดในหน้าเดียว</p>
+<div class="card">
+<ul class="fields">
+<li><b>การ์ดตัวเลข (KPI):</b> งานที่กำลังดำเนินการ, งานติดตามเกินกำหนด, ส่งใบเสนอราคาแล้ว, ปิดการขายสำเร็จ</li>
+<li><b>ปุ่ม + สร้าง Inquiry</b> — เปิดโอกาสการขาย/คำถามลูกค้ารายการใหม่</li>
+<li><b>ปุ่มสลับภาษา TH / EN</b> (มุมขวาบน) — โมดูล CRM รองรับทั้งไทยและอังกฤษ</li>
+<li><b>แผง "Inquiry ล่าสุด"</b> — ตารางล่าสุด: เลขที่, ลูกค้า, รูปแบบขนส่ง, สถานะ, วันติดตาม พร้อมลิงก์ <i>ดูทั้งหมด</i> ไปหน้ากระบวนการขาย</li>
+</ul>
+</div>
+<figure class="shot">
+  <img src="images/op-02-crm-dashboard.png" alt="แดชบอร์ด CRM" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-02-crm-dashboard.png</div></div>
+  <figcaption>รูปที่ 2 — แดชบอร์ด CRM</figcaption>
+</figure>
+
+<h3 id="op-customers"><span class="num">3.</span>CRM Customers — ทะเบียนลูกค้า CRM</h3>
+<div class="meta"><span class="tag url">/backend/crm/customers</span><span class="tag">CRM</span></div>
+<p class="lead">ข้อมูลลูกค้า ผู้ติดต่อ ทีมดูแล และบริษัทผู้ดำเนินงาน — มุมมองลูกค้าแบบ 360°</p>
+<div class="card">
+<b>วิธีใช้</b>
+<ol class="steps">
+<li>ใช้ช่อง <b>ค้นหา</b> หาด้วยชื่อลูกค้า, รหัส หรือรายละเอียด</li>
+<li>กดปุ่ม <b>ข้อมูลลูกค้า 360°</b> ที่แถวของลูกค้าเพื่อดูรายละเอียดเชิงลึก (ผู้ติดต่อ ทีมดูแล เอกสาร)</li>
+<li>กดปุ่ม <b>สร้างลูกค้า</b> (มุมขวาบน) เพื่อเพิ่มลูกค้าใหม่</li>
+<li>มีปุ่มสลับภาษา <b>TH / EN</b> เช่นเดียวกับหน้า CRM อื่น</li>
+</ol>
+<p style="margin:0;color:var(--muted);font-size:14px">คอลัมน์: CODE, ลูกค้า, ผู้ติดต่อ, โทรศัพท์, สถานะ</p>
+</div>
+<figure class="shot">
+  <img src="images/op-03-crm-customers.png" alt="ทะเบียนลูกค้า CRM" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-03-crm-customers.png</div></div>
+  <figcaption>รูปที่ 3 — ทะเบียนลูกค้า CRM (ข้อมูลลูกค้า 360°)</figcaption>
+</figure>
+
+<h3 id="op-inquiry"><span class="num">4.</span>Inquiry Pipeline — กระบวนการขาย</h3>
+<div class="meta"><span class="tag url">/backend/crm/inquiries</span><span class="tag">CRM</span></div>
+<p class="lead">กระดานติดตาม "Inquiry" (คำถาม/โอกาสการขายจากลูกค้า) ตั้งแต่รับเรื่องจนถึงส่งราคาและปิดการขาย</p>
+<div class="callout c-note"><b>Inquiry Pipeline คือระบบอะไร?</b>
+เป็น <b>กระบวนการขาย (sales pipeline)</b> ต้นทางของงานขาย — ทุกครั้งที่ลูกค้าติดต่อสอบถามงานขนส่ง จะเปิดเป็น "Inquiry" หนึ่งรายการ แล้วติดตามความคืบหน้าไล่ตามสถานะจนกลายเป็นใบเสนอราคาและปิดการขาย เชื่อมต่อกับหน้า Quotations โดยตรง (Inquiry → ใบเสนอราคา)</div>
+<div class="card">
+<b>วิธีใช้</b>
+<ol class="steps">
+<li>กด <b>+ สร้าง Inquiry</b> เพื่อเปิดโอกาสการขายใหม่ (ระบุลูกค้า รูปแบบขนส่ง ความเร่งด่วน)</li>
+<li>ใช้ช่อง <b>ค้นหา</b> (เลข Inquiry / ลูกค้า / รายละเอียดงาน) และตัวกรอง <b>สถานะ</b> หรือติ๊ก <b>เฉพาะงานเกินกำหนด</b> แล้วกด <b>กรอง</b></li>
+<li>อัปเดตสถานะแต่ละ Inquiry ไล่ตามขั้นตอนการขาย</li>
+</ol>
+<b>สถานะในกระบวนการขาย</b>
+<div style="margin:6px 0">
+<span class="badge b-grey">รับเรื่องใหม่</span><span class="badge b-grey">คัดกรอง</span><span class="badge b-blue">ขอราคา</span><span class="badge b-blue">กำลังจัดทำใบเสนอราคา</span><span class="badge b-blue">ส่งใบเสนอราคาแล้ว</span><span class="badge b-yellow">ติดตามลูกค้า</span><span class="badge b-green">ชนะ</span><span class="badge b-red">แพ้</span><span class="badge b-red">ยกเลิก</span><span class="badge b-grey">พักงาน</span>
+</div>
+<p style="margin:0;color:var(--muted);font-size:14px">คอลัมน์: เลขที่, ลูกค้า, วันที่, ความเร่งด่วน, รูปแบบขนส่ง, สถานะ, ขั้นตอนถัดไป/วันติดตาม</p>
+</div>
+<figure class="shot">
+  <img src="images/op-04-inquiry-pipeline.png" alt="กระบวนการขาย (Inquiry Pipeline)" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-04-inquiry-pipeline.png</div></div>
+  <figcaption>รูปที่ 4 — กระบวนการขาย (Inquiry Pipeline)</figcaption>
+</figure>
+
+<h3 id="op-quotations"><span class="num">5.</span>Quotations — ใบเสนอราคา</h3>
+<div class="meta"><span class="tag url">/backend/quotation</span><span class="tag">งานขาย</span></div>
+<p class="lead">รายการใบเสนอราคาทั้งหมด และจุดเริ่มต้นของกระบวนการขาย</p>
+<div class="card">
+<b>หน้ารายการ</b>
+<ul class="fields">
+<li><b>คอลัมน์:</b> เลขที่ (เช่น QT2026070004), วันที่, ลูกค้า, ยอดรวม, สถานะ</li>
+<li><b>สถานะ:</b> <span class="badge b-grey">แบบร่าง</span> <span class="badge b-blue">ส่งแล้ว</span> <span class="badge b-yellow">หมดอายุ</span></li>
+<li><b>ปุ่มในแต่ละแถว:</b> ดู (👁), แก้ไข ✏ (เฉพาะแบบร่าง), ลบ 🗑 (เฉพาะแบบร่าง), พิมพ์ 🖨</li>
+</ul>
+<b>การสร้างใบเสนอราคา (ปุ่ม + สร้างใบเสนอราคา)</b>
+<ul class="fields">
+<li><b>เลขที่ใบเสนอราคา</b> — สร้างอัตโนมัติ</li>
+<li><b>วันที่ <span class="req">*</span></b> และ <b>ใช้ได้ถึง <span class="req">*</span></b> — วันที่ออกและวันหมดอายุ</li>
+<li><b>ลูกค้า <span class="req">*</span></b> — เลือกจากรายชื่อลูกค้า</li>
+<li><b>เรื่อง</b> — หัวข้อ/รายละเอียดงาน</li>
+<li><b>ประเภทงาน</b> — เลือก 1 ประเภท</li>
+<li><b>ข้อมูลประกอบการเสนอราคา (BOP checklist)</b> — สรุป requirement ก่อนคิดราคา เช่น ประเภทธุรกิจ, สิทธิประโยชน์ที่ถือครอง</li>
+<li><b>รายการสินค้า/บริการ</b> — เพิ่มรายการค่าบริการจากแค็ตตาล็อก (ดูหัวข้อ Products)</li>
+<li><b>สรุปยอด (แผงขวา):</b> ยอดรวม, ส่วนลด %, หลังหักส่วนลด, VAT % (ค่าเริ่มต้น 7), ภาษีมูลค่าเพิ่ม, ยอดสุทธิ</li>
+</ul>
+<p style="margin:0;color:var(--muted);font-size:14px">ปุ่ม: <i>โหลดตัวอย่างงาน BOP</i> / <i>บันทึก</i> / <i>บันทึกใบเสนอราคา</i> / <i>ยกเลิก</i></p>
+</div>
+<figure class="shot">
+  <img src="images/op-05-quotations.png" alt="Quotations list" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-05-quotations.png</div></div>
+  <figcaption>รูปที่ 5 — รายการใบเสนอราคา</figcaption>
+</figure>
+<figure class="shot">
+  <img src="images/op-05b-quotation-create.png" alt="Create quotation" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-05b-quotation-create.png</div></div>
+  <figcaption>รูปที่ 5.1 — ฟอร์มสร้างใบเสนอราคา</figcaption>
+</figure>
+
+<h3 id="op-qactivities"><span class="num">6.</span>Quotation Activities</h3>
+<div class="meta"><span class="tag url">/backend/quotation/activities</span><span class="tag">งานขาย</span></div>
+<p class="lead">จัดการรายการย่อย/โน้ต และต้นทุนของแต่ละใบเสนอราคา พร้อมส่งอนุมัติ</p>
+<div class="card">
+<ol class="steps">
+<li>เลือกใบเสนอราคาจาก dropdown <b>Quotation</b></li>
+<li>ในตารางแต่ละรายการจะเห็น <b>ประมาณการ/ต้นทุนจริง (Plan vs Actual)</b> — กดปุ่ม + เพื่อเพิ่มต้นทุนหรือกิจกรรมย่อย</li>
+<li>กด <b>ส่งอนุมัติ / Submit approval</b> เมื่อพร้อม, หรือ <b>จัดการ Templates</b> เพื่อใช้เทมเพลตซ้ำ</li>
+</ol>
+<div class="callout c-note" style="margin:6px 0 0"><b>หมายเหตุ</b>งานชิปเมนต์ควรเริ่มจากใบเสนอราคาที่ผ่านการอนุมัติแล้วเท่านั้น</div>
+</div>
+<figure class="shot">
+  <img src="images/op-06-quotation-activities.png" alt="Quotation Activities" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-06-quotation-activities.png</div></div>
+  <figcaption>รูปที่ 6 — Quotation Activities</figcaption>
+</figure>
+
+<h3 id="op-so"><span class="num">7.</span>Sales Orders — ใบสั่งขาย</h3>
+<div class="meta"><span class="tag url">/backend/sales/orders</span><span class="tag">งานขาย</span></div>
+<p class="lead">เอกสารใบสั่งขายที่สร้างจากใบเสนอราคาที่อนุมัติแล้ว หรือสร้างเองแบบ manual</p>
+<div class="card">
+<ul class="fields">
+<li><b>คอลัมน์:</b> เลขที่ (เช่น SO2026030001), วันที่, ลูกค้า, ยอดรวม, สถานะ</li>
+<li>กดปุ่ม <b>+ สร้างใบสั่งขาย</b> เพื่อเพิ่มรายการใหม่ และปุ่มดู (👁) ที่แต่ละแถว</li>
+</ul>
+</div>
+<figure class="shot">
+  <img src="images/op-07-sales-orders.png" alt="Sales Orders" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-07-sales-orders.png</div></div>
+  <figcaption>รูปที่ 7 — ใบสั่งขาย</figcaption>
+</figure>
+
+<h3 id="op-si"><span class="num">8.</span>Sales Invoices — ใบแจ้งหนี้</h3>
+<div class="meta"><span class="tag url">/backend/sales/invoices</span><span class="tag">งานขาย/การเงิน</span></div>
+<p class="lead">ติดตามอายุหนี้ (aging) การเก็บเงิน และความพร้อมของเอกสารภาษี</p>
+<div class="card">
+<ul class="fields">
+<li><b>การ์ดสรุป:</b> ยอดค้างชำระทั้งหมด, ใกล้ครบกำหนด (7 วัน), ยอดใกล้ครบกำหนด, เกินกำหนด</li>
+<li><b>คอลัมน์:</b> เลขที่, วันที่, ครบกำหนด, ลูกค้า, ประเภทเอกสาร, ยอดรวม, ชำระแล้ว, คงค้าง, สถานะ (<span class="badge b-red">เกินกำหนด</span>)</li>
+<li><b>ปุ่มในแต่ละแถว:</b> ดู 👁, พิมพ์ 🖨, บันทึกรับชำระ 💲, ยกเลิก 🚫</li>
+</ul>
+</div>
+<figure class="shot">
+  <img src="images/op-08-sales-invoices.png" alt="Sales Invoices" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-08-sales-invoices.png</div></div>
+  <figcaption>รูปที่ 8 — ใบแจ้งหนี้</figcaption>
+</figure>
+
+<h3 id="op-jobs"><span class="num">9.</span>Shipment Jobs</h3>
+<div class="meta"><span class="tag url">/backend/shipments</span><span class="tag">ชิปเมนต์</span></div>
+<p class="lead">สร้าง กรอง และจัดการงานนำเข้า/ส่งออก (สร้างจากใบเสนอราคาที่อนุมัติ)</p>
+<div class="card">
+<b>ตัวกรอง</b>
+<ul class="fields">
+<li><b>Search</b> — Job no, BL no, quotation</li>
+<li><b>Shipment Type</b> (ประเภทงาน), <b>Customer</b> (ลูกค้า), <b>Status</b> (สถานะ)</li>
+<li><b>ETA Range</b> / <b>ETD Range</b> — ช่วงวันถึง/วันออก (From–To)</li>
+<li>กด <b>Apply Filters</b> เพื่อค้นหา หรือ <b>Reset</b> เพื่อล้าง</li>
+</ul>
+</div>
+<figure class="shot">
+  <img src="images/op-09-shipment-jobs.png" alt="Shipment Jobs" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-09-shipment-jobs.png</div></div>
+  <figcaption>รูปที่ 9 — Shipment Jobs</figcaption>
+</figure>
+
+<h3 id="op-reports"><span class="num">10.</span>Reports</h3>
+<div class="meta"><span class="tag url">/backend/shipments/reports</span><span class="tag">รายงาน</span></div>
+<p class="lead">รายงานชิปเมนต์แบบตารางที่พร้อม export และกรองตามช่วงวันที่</p>
+<div class="card">
+<ol class="steps">
+<li>เลือกประเภทรายงานจาก dropdown <b>Report</b> (เช่น Shipment jobs by date)</li>
+<li>กำหนด <b>Date From</b> – <b>Date To</b></li>
+<li>กด <b>Run</b> เพื่อแสดงผล (ตารางออกแบบมาให้คัดลอก/ส่งออกง่าย)</li>
+</ol>
+</div>
+<figure class="shot">
+  <img src="images/op-10-reports.png" alt="Reports" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/op-10-reports.png</div></div>
+  <figcaption>รูปที่ 10 — Shipment Reports</figcaption>
+</figure>
+
+<!-- ===================== FINANCE ===================== -->
+<h2 class="group">หมวด Finance</h2>
+<div class="callout c-note"><b>วงจรเบิกเงินทดรอง (Cash Request)</b>
+หน้าเบิกเงิน/อนุมัติ/จ่าย/เคลียร์ ใช้ชุดสถานะร่วมกัน: ร่าง → รออนุมัติ → อนุมัติแล้ว → บัญชีรอยืนยันยอด → ยืนยันยอดแล้ว → จ่ายเงินแล้ว → เคลียร์บางส่วน → เคลียร์แล้ว (และ ยกเลิก). ทุกหน้ามีการ์ดสรุป 4 ใบ (รายการตามตัวกรอง / ยอดขอเบิก / ยอดอนุมัติ-จ่ายแล้ว / ยอดค้างเคลียร์) และตัวกรองเหมือนกัน (Shipment, ค้นหา, ลูกค้า, ต้องใช้เงินตั้งแต่–ถึงวันที่). เลขคำขอขึ้นต้นด้วย <code>PCR</code></div>
+
+<h3 id="fin-expenses"><span class="num">11.</span>Expenses — นำเข้าค่าใช้จ่าย (OCR)</h3>
+<div class="meta"><span class="tag url">/backend/expenses</span><span class="tag">OCR</span></div>
+<p class="lead">อัปโหลดเอกสารค่าใช้จ่าย แล้วให้ระบบอ่านข้อมูลอัตโนมัติด้วย OCR (OpenAI)</p>
+<div class="card">
+<ol class="steps">
+<li>กด <b>Choose File</b> เลือกไฟล์ (รองรับ PDF/JPG/PNG/WEBP/TXT/CSV ขนาดไม่เกิน 20MB)</li>
+<li>เปิดสวิตช์ <b>Auto OCR</b> เพื่อให้ระบบอ่านข้อมูลอัตโนมัติ</li>
+<li>กด <b>Upload</b> — เอกสารจะเข้าคิว <b>Imported Documents (OCR Queue)</b></li>
+<li>ตรวจผล OCR ในตาราง (VENDOR, DOC NO, DATE, TOTAL, ITEMS, CONFIDENCE) แล้วยืนยันเป็น draft ค่าใช้จ่าย</li>
+</ol>
+</div>
+<figure class="shot">
+  <img src="images/fin-11-expenses.png" alt="Expense Import" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/fin-11-expenses.png</div></div>
+  <figcaption>รูปที่ 11 — Expense Import (OCR)</figcaption>
+</figure>
+
+<h3 id="fin-tax"><span class="num">12.</span>Tax Documents — ใบเสร็จ/ใบกำกับภาษี</h3>
+<div class="meta"><span class="tag url">/backend/sales/tax-documents</span><span class="tag">เอกสารภาษี</span></div>
+<p class="lead">รวมเอกสารภาษีที่ออกแล้ว พร้อมสรุปยอดและ VAT</p>
+<div class="card">
+<ul class="fields">
+<li><b>ปุ่มช่วงเวลา:</b> เดือนนี้ / เดือนก่อน / 3 เดือนย้อนหลัง / ปีนี้ / ทั้งหมด</li>
+<li><b>ตัวกรอง:</b> เดือน, ตั้งแต่วันที่–ถึงวันที่, ประเภทเอกสาร, ลูกค้า</li>
+<li><b>การ์ดสรุป:</b> เอกสารทั้งหมด, ยอดรวม, ภาษีมูลค่าเพิ่ม (VAT), ใบแจ้งหนี้/ใบกำกับภาษี, ใบเสร็จ/ใบกำกับภาษี, ใบเสร็จรับเงิน</li>
+<li><b>คอลัมน์:</b> เลขที่เอกสาร, วันที่, ประเภท, ลูกค้า, เลขผู้เสียภาษี, ยอดเงิน, VAT, อ้างอิง</li>
+</ul>
+</div>
+<figure class="shot">
+  <img src="images/fin-12-tax-documents.png" alt="Tax Documents" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/fin-12-tax-documents.png</div></div>
+  <figcaption>รูปที่ 12 — ใบเสร็จ/ใบกำกับภาษี</figcaption>
+</figure>
+
+<h3 id="fin-intake"><span class="num">13.</span>เบิกเงิน — Cash Request Intake</h3>
+<div class="meta"><span class="tag url">/backend/finance/cash-requests/intake</span><span class="tag">การเงิน</span></div>
+<p class="lead">เตรียมและส่งคำขอเบิกเงินทดรองสำหรับงาน Shipment</p>
+<div class="card">
+<ol class="steps">
+<li>สร้างคำขอเบิก โดยผูกกับงาน Shipment (Job/BL/Booking/Quotation) และระบุรายการที่จะใช้เงิน</li>
+<li>ตรวจสถานะผ่านแท็บ: ร่าง / รออนุมัติ / บัญชีรอยืนยันยอด / ทั้งหมด</li>
+<li>เมื่อพร้อมส่ง คำขอจะเข้าสู่ขั้นตอน <b>อนุมัติเงิน</b> ต่อไป</li>
+</ol>
+</div>
+<figure class="shot">
+  <img src="images/fin-13-intake.png" alt="เบิกเงิน" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/fin-13-intake.png</div></div>
+  <figcaption>รูปที่ 13 — เบิกเงิน (Intake)</figcaption>
+</figure>
+
+<h3 id="fin-approve"><span class="num">14.</span>อนุมัติเงิน — Money Approvals</h3>
+<div class="meta"><span class="tag url">/backend/approvals/money</span><span class="tag">การเงิน</span></div>
+<p class="lead">ตรวจว่าคำขอแต่ละรายการใช้ทำอะไร ของใคร และอนุมัติเฉพาะจำนวนที่ควรจ่าย</p>
+<div class="card">
+<ol class="steps">
+<li>ดูรายละเอียดการใช้เงิน และงาน/ลูกค้าที่เกี่ยวข้อง (เทียบ แผน vs ขออนุมัติ)</li>
+<li>กรอก <b>ยอดอนุมัติ</b> ในช่อง Action (แก้ไขได้ ไม่จำเป็นต้องเท่ายอดที่ขอ) และใส่หมายเหตุ</li>
+<li>ยืนยันการอนุมัติ — รายการจะไปสู่ขั้น <b>จ่ายเงิน</b></li>
+</ol>
+</div>
+<figure class="shot">
+  <img src="images/fin-14-approvals.png" alt="Money Approvals" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/fin-14-approvals.png</div></div>
+  <figcaption>รูปที่ 14 — อนุมัติเงิน</figcaption>
+</figure>
+
+<h3 id="fin-disburse"><span class="num">15.</span>จ่ายเงิน — Disbursements</h3>
+<div class="meta"><span class="tag url">/backend/finance/cash-requests/disbursements</span><span class="tag">การเงิน</span></div>
+<p class="lead">คิวรายการที่อนุมัติแล้ว รอยืนยันยอด และรอฝ่ายบัญชีจ่ายเงิน</p>
+<div class="card">
+<ol class="steps">
+<li>ฝ่ายบัญชียืนยันยอดและบันทึกการจ่ายเงินจริง (ใส่หมายเหตุบัญชีในช่อง Action)</li>
+<li>ติดตามผ่านแท็บสถานะ: อนุมัติแล้ว / บัญชีรอยืนยันยอด / ยืนยันยอดแล้ว / จ่ายเงินแล้ว</li>
+</ol>
+</div>
+<figure class="shot">
+  <img src="images/fin-15-disbursements.png" alt="จ่ายเงิน" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/fin-15-disbursements.png</div></div>
+  <figcaption>รูปที่ 15 — จ่ายเงิน</figcaption>
+</figure>
+
+<h3 id="fin-settle"><span class="num">16.</span>เคลียร์เงิน — Settlements</h3>
+<div class="meta"><span class="tag url">/backend/finance/cash-requests/settlements</span><span class="tag">การเงิน</span></div>
+<p class="lead">ติดตามเงินที่จ่ายแล้ว และรอบิลจริงหรือเงินคืนมาเคลียร์</p>
+<div class="card">
+<ol class="steps">
+<li>จับคู่เงินทดรองที่จ่ายไปกับบิล/ค่าใช้จ่ายจริง และบันทึกเงินคืน (ช่อง เงินคืนสะสม)</li>
+<li>ติดตามคอลัมน์ เคลียร์ / คืนเงิน / ค้างเคลียร์ ผ่านแท็บ จ่ายเงินแล้ว / เคลียร์บางส่วน / เคลียร์แล้ว</li>
+</ol>
+</div>
+<figure class="shot">
+  <img src="images/fin-16-settlements.png" alt="เคลียร์เงิน" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/fin-16-settlements.png</div></div>
+  <figcaption>รูปที่ 16 — เคลียร์เงิน</figcaption>
+</figure>
+
+<h3 id="fin-shipexp"><span class="num">17.</span>Shipment Expenses</h3>
+<div class="meta"><span class="tag url">/backend/shipments/expenses</span><span class="tag">ต้นทุนงาน</span></div>
+<p class="lead">ติดตามต้นทุนจริงของงาน แยกตามงาน ลูกค้า และสถานะการจ่าย</p>
+<div class="card">
+<ul class="fields">
+<li><b>ตัวกรอง:</b> Customer, Payment Status, Date From–To</li>
+<li><b>คอลัมน์:</b> Date, Job No, Customer, Type (เช่น transport), Description, Vendor, Amount, Status (<span class="badge b-green">paid</span>)</li>
+</ul>
+</div>
+<figure class="shot">
+  <img src="images/fin-17-shipment-expenses.png" alt="Shipment Expenses" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/fin-17-shipment-expenses.png</div></div>
+  <figcaption>รูปที่ 17 — Shipment Expenses</figcaption>
+</figure>
+
+<h3 id="fin-register"><span class="num">18.</span>ทะเบียนเบิกเงิน — Register</h3>
+<div class="meta"><span class="tag url">/backend/finance/cash-requests/register</span><span class="tag">การเงิน</span></div>
+<p class="lead">รายการเบิกเงินทั้งหมดทุกสถานะ สำหรับตรวจสอบย้อนหลัง (audit)</p>
+<div class="card">
+<p style="margin:0">เป็นทะเบียนกลางรวมคำขอเบิกเงินทุกใบในทุกสถานะ ใช้ค้นหา/กรองเพื่อดูประวัติและกระทบยอด เหมาะสำหรับฝ่ายบัญชีและการตรวจสอบ</p>
+</div>
+<figure class="shot">
+  <img src="images/fin-18-register.png" alt="ทะเบียนเบิกเงิน" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/fin-18-register.png</div></div>
+  <figcaption>รูปที่ 18 — ทะเบียนเบิกเงิน</figcaption>
+</figure>
+
+<h3 id="fin-shipinv"><span class="num">19.</span>Shipment Invoices</h3>
+<div class="meta"><span class="tag url">/backend/shipments/invoices</span><span class="tag">การเงิน</span></div>
+<p class="lead">จัดการใบแจ้งหนี้ที่ผูกกับงานชิปเมนต์โดยตรง</p>
+<div class="card">
+<ul class="fields">
+<li><b>ตัวกรอง:</b> Customer, Status, Date From–To</li>
+<li><b>คอลัมน์:</b> Invoice No, Date, Job No, Customer, Total, Status (<span class="badge b-red">overdue</span>)</li>
+</ul>
+</div>
+<figure class="shot">
+  <img src="images/fin-19-shipment-invoices.png" alt="Shipment Invoices" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/fin-19-shipment-invoices.png</div></div>
+  <figcaption>รูปที่ 19 — Shipment Invoices</figcaption>
+</figure>
+
+<!-- ===================== MASTER DATA ===================== -->
+<h2 class="group">หมวด Master Data</h2>
+<div class="callout c-note"><b>รูปแบบหน้าเหมือนกันทุกเมนู</b>
+ทุกหน้าข้อมูลตั้งต้นมีโครงสร้างเดียวกัน: การ์ด <b>Master Records</b>, ช่อง <b>Search</b>, ตัวกรอง <b>Status</b> (All/Active/Inactive), เลือกจำนวนแถว/หน้า (10–100), ปุ่ม <b>Apply filters</b>/<b>Reset</b>, ปุ่ม <b>+ Create</b> (มุมขวาบน) และแต่ละแถวมีปุ่ม <b>Edit</b> / <b>Delete</b> ต่างกันแค่คอลัมน์ตามชนิดข้อมูล</div>
+
+<h3 id="md-customers"><span class="num">20.</span>Customers</h3>
+<div class="meta"><span class="tag url">/backend/master/customers</span></div>
+<p class="lead">ทะเบียนลูกค้า (ป้อนให้ dropdown ลูกค้าทุกหน้า) — ปุ่มสร้าง: เพิ่มลูกค้า</p>
+<div class="card"><p style="margin:0">คอลัมน์: Code, Customer, Contact, Phone, Email, Status</p></div>
+<figure class="shot"><img src="images/md-20-customers.png" alt="Customers" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-20-customers.png</div></div><figcaption>รูปที่ 20 — Customers</figcaption></figure>
+
+<h3 id="md-suppliers"><span class="num">21.</span>Suppliers</h3>
+<div class="meta"><span class="tag url">/backend/master/suppliers</span></div>
+<p class="lead">ทะเบียนผู้ขาย/ตัวแทน (vendor) — รหัสขึ้นต้น V-</p>
+<div class="card"><p style="margin:0">คอลัมน์: Code, Supplier, Phone, Website, Sales Contact, Status</p></div>
+<figure class="shot"><img src="images/md-21-suppliers.png" alt="Suppliers" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-21-suppliers.png</div></div><figcaption>รูปที่ 21 — Suppliers</figcaption></figure>
+
+<h3 id="md-servicegroups"><span class="num">22.</span>Service Groups</h3>
+<div class="meta"><span class="tag url">/backend/master/service-groups</span></div>
+<p class="lead">กลุ่มบริการ พร้อมการแมปบัญชี (GL) และสถานะ VAT/ค่าใช้จ่าย/เครดิต/หัก ณ ที่จ่าย</p>
+<div class="card"><p style="margin:0">คอลัมน์: Code, Name, GL, VAT, Expense, Credit, WHT, Status — เช่น SRV (ค่าบริการ), SLC (Local Charges), CST (Costs), ADV (Credit Advances), EX-P (ค่าใช้จ่ายบริษัท), ATL (Additional), ERN (Deposit Container)</p></div>
+<figure class="shot"><img src="images/md-22-service-groups.png" alt="Service Groups" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-22-service-groups.png</div></div><figcaption>รูปที่ 22 — Service Groups</figcaption></figure>
+
+<h3 id="md-products"><span class="num">23.</span>Products &amp; Services</h3>
+<div class="meta"><span class="tag url">/backend/master/products</span><span class="tag">แค็ตตาล็อกค่าบริการ</span></div>
+<p class="lead">แค็ตตาล็อกสินค้า/บริการและค่าใช้จ่าย ใช้เป็นรายการตั้งต้นในใบเสนอราคา (มีมากกว่า 240 รายการ)</p>
+<div class="card">
+<ul class="fields">
+<li><b>ปุ่มสร้าง:</b> Add Product / Service</li>
+<li><b>คอลัมน์:</b> CODE, NAME, ENGLISH NAME, SERVICE GROUP, CURRENCY, UNIT, SELL PRICE, COST, VAT, STATUS</li>
+<li>ครอบคลุมค่าบริการชิปปิ้งครบ เช่น Freight, THC, D/O Fee, Customs Clearance, Handling, Transport ฯลฯ (หน่วยหลากหลาย: SHP, CNTR, RT, CBM, SET…)</li>
+</ul>
+</div>
+<figure class="shot"><img src="images/md-23-products.png" alt="Products and Services" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-23-products.png</div></div><figcaption>รูปที่ 23 — Products &amp; Services</figcaption></figure>
+
+<h3 id="md-costtypes"><span class="num">24.</span>Cost Types — ประเภทต้นทุน</h3>
+<div class="meta"><span class="tag url">/backend/master/cost-types</span></div>
+<p class="lead">ประเภทต้นทุนสำหรับจัดหมวดค่าใช้จ่าย — ปุ่มสร้าง: เพิ่มประเภทต้นทุน</p>
+<div class="card"><p style="margin:0">คอลัมน์: รหัส, ชื่อประเภทต้นทุน, รหัสบัญชี, รายละเอียด, สถานะ — เช่น SHP (ค่าขนส่ง), LAB (ค่าแรง), OVH (ค่าโสหุ้ย), PKG (บรรจุภัณฑ์), MAT (วัตถุดิบ), OTH (อื่นๆ)</p></div>
+<figure class="shot"><img src="images/md-24-cost-types.png" alt="Cost Types" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-24-cost-types.png</div></div><figcaption>รูปที่ 24 — ประเภทต้นทุน</figcaption></figure>
+
+<h3 id="md-lines"><span class="num">25.</span>Shipping Lines</h3>
+<div class="meta"><span class="tag url">/backend/master/shipping-lines</span></div>
+<p class="lead">สายเรือ/สายการเดินเรือ</p>
+<div class="card"><p style="margin:0">คอลัมน์: Code, Name, SCAC, Contact, Status — เช่น CMA CGM, Evergreen, Hapag-Lloyd, Maersk, MSC, ONE</p></div>
+<figure class="shot"><img src="images/md-25-shipping-lines.png" alt="Shipping Lines" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-25-shipping-lines.png</div></div><figcaption>รูปที่ 25 — Shipping Lines</figcaption></figure>
+
+<h3 id="md-ports"><span class="num">26.</span>Ports</h3>
+<div class="meta"><span class="tag url">/backend/master/ports</span></div>
+<p class="lead">ท่าเรือ/ท่าอากาศยาน สำหรับต้นทาง (POL) และปลายทาง (POD)</p>
+<div class="card"><p style="margin:0">คอลัมน์: Code, Port, Country, Type (sea/air), Status — เช่น Bangkok, Laem Chabang, Hong Kong, Rotterdam, Shanghai, Singapore</p></div>
+<figure class="shot"><img src="images/md-26-ports.png" alt="Ports" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-26-ports.png</div></div><figcaption>รูปที่ 26 — Ports</figcaption></figure>
+
+<h3 id="md-doctypes"><span class="num">27.</span>Document Types</h3>
+<div class="meta"><span class="tag url">/backend/master/document-types</span></div>
+<p class="lead">ประเภทเอกสารในระบบ พร้อมหมวดและการกำหนดว่าจำเป็นหรือไม่</p>
+<div class="card"><p style="margin:0">คอลัมน์: Code, Name, Category (transport/customs/commercial/finance), Required, Status — เช่น BL, DO, SI, Invoice, Packing List, Import/Export Entry, CO, Receipt, Tax Invoice</p></div>
+<figure class="shot"><img src="images/md-27-document-types.png" alt="Document Types" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-27-document-types.png</div></div><figcaption>รูปที่ 27 — Document Types</figcaption></figure>
+
+<h3 id="md-containers"><span class="num">28.</span>Container Types</h3>
+<div class="meta"><span class="tag url">/backend/master/container-types</span></div>
+<p class="lead">ประเภทตู้คอนเทนเนอร์</p>
+<div class="card"><p style="margin:0">คอลัมน์: Code, Name, ISO, Size (ft), Status — เช่น 20GP, 20RF, 40GP, 40HC, 40RF, 45HC</p></div>
+<figure class="shot"><img src="images/md-28-container-types.png" alt="Container Types" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-28-container-types.png</div></div><figcaption>รูปที่ 28 — Container Types</figcaption></figure>
+
+<h3 id="md-jobstatus"><span class="num">29.</span>Job Statuses</h3>
+<div class="meta"><span class="tag url">/backend/master/job-statuses</span></div>
+<p class="lead">กำหนดลำดับสถานะของงานชิปเมนต์ (ลากผ่านทั้ง lifecycle)</p>
+<div class="card"><p style="margin:0">คอลัมน์: Code, Status, Order (ลำดับ), Closed (ปิดงานหรือไม่), Active — ลำดับ: New → Booking → Documentation → In Transit → Arrived → Customs Clearance → Delivered → Closed / Cancelled</p></div>
+<figure class="shot"><img src="images/md-29-job-statuses.png" alt="Job Statuses" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-29-job-statuses.png</div></div><figcaption>รูปที่ 29 — Job Statuses</figcaption></figure>
+
+<h3 id="md-customsstatus"><span class="num">30.</span>Customs Statuses</h3>
+<div class="meta"><span class="tag url">/backend/master/customs-statuses</span></div>
+<p class="lead">กำหนดลำดับสถานะพิธีการศุลกากร</p>
+<div class="card"><p style="margin:0">คอลัมน์: Code, Status, Order, Closed, Active — ลำดับ: Not Started → Preparing → Submitted → Under Examination → Duty Pending → Hold → Released / Not Required</p></div>
+<figure class="shot"><img src="images/md-30-customs-statuses.png" alt="Customs Statuses" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/md-30-customs-statuses.png</div></div><figcaption>รูปที่ 30 — Customs Statuses</figcaption></figure>
+
+<!-- ===================== ADMINISTRATION ===================== -->
+<h2 class="group">หมวด Administration</h2>
+
+<h3 id="adm-users"><span class="num">31.</span>Users — จัดการผู้ใช้</h3>
+<div class="meta"><span class="tag url">/backend/settings/users</span><span class="tag">ผู้ดูแลระบบ</span></div>
+<p class="lead">จัดการบัญชีผู้ใช้ทั้งหมด กำหนดบทบาท เปิด/ปิดการใช้งาน และรีเซ็ตรหัสผ่าน</p>
+<div class="card">
+<ul class="fields">
+<li><b>ตัวกรอง:</b> Search (username/ชื่อ/อีเมล), Role, Status, Rows แล้วกด Apply</li>
+<li><b>ปุ่มสร้าง:</b> Create User</li>
+<li><b>คอลัมน์:</b> USERNAME, FULL NAME, EMAIL, ROLE, STATUS, LAST LOGIN</li>
+<li><b>ปุ่มในแต่ละแถว:</b> <b>Edit</b> (แก้ไขข้อมูล/บทบาท/รีเซ็ตรหัสผ่าน), <b>Disable</b> (ระงับการใช้งาน), <b>Delete</b> (ลบ)</li>
+</ul>
+<div class="callout c-tip" style="margin:6px 0 0"><b>เปลี่ยน/รีเซ็ตรหัสผ่านผู้ใช้</b>ทำได้ที่ปุ่ม <b>Edit</b> ของผู้ใช้รายนั้น แล้วตั้งรหัสใหม่ในฟอร์ม (ระบบเก็บรหัสเป็น hash จึงดูรหัสเดิมไม่ได้ ทำได้แค่ตั้งใหม่)</div>
+</div>
+<figure class="shot"><img src="images/adm-31-users.png" alt="User Management" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/adm-31-users.png</div></div><figcaption>รูปที่ 31 — User Management</figcaption></figure>
+
+<h3 id="adm-roles"><span class="num">32.</span>Roles — บทบาท/สิทธิ์</h3>
+<div class="meta"><span class="tag url">/backend/settings/roles</span><span class="tag">สิทธิ์</span></div>
+<p class="lead">กำหนดบทบาทและสิทธิ์การเข้าถึง — ปุ่มสร้าง: เพิ่มบทบาทใหม่</p>
+<div class="card">
+<b>บทบาทในระบบ (7 บทบาท)</b>
+<div class="scroll"><table>
+<tr><th>#</th><th>บทบาท</th><th>คำอธิบาย</th></tr>
+<tr><td>1</td><td>Super Admin</td><td>ผู้ดูแลระบบสูงสุด มีสิทธิ์ทุกอย่าง</td></tr>
+<tr><td>2</td><td>admin</td><td>ผู้ดูแลระบบ เข้าถึงงานปฏิบัติการได้กว้าง</td></tr>
+<tr><td>3</td><td>manager</td><td>ตรวจอนุมัติ คุณภาพงาน และข้อยกเว้นเชิงปฏิบัติการ</td></tr>
+<tr><td>4</td><td>Staff</td><td>พนักงานทั่วไป</td></tr>
+<tr><td>5</td><td>operation</td><td>ดำเนินงานชิปเมนต์ เอกสาร และประสานงาน</td></tr>
+<tr><td>6</td><td>accounting</td><td>ค่าใช้จ่าย การวางบิล และกระทบยอดใบแจ้งหนี้</td></tr>
+<tr><td>7</td><td>Sales and Marketing</td><td>หาลูกค้าใหม่ ดูแลลูกค้าเดิม ทำใบเสนอราคา และปิดการขาย</td></tr>
+</table></div>
+</div>
+<figure class="shot"><img src="images/adm-32-roles.png" alt="Roles" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/adm-32-roles.png</div></div><figcaption>รูปที่ 32 — จัดการบทบาท</figcaption></figure>
+
+<h3 id="adm-system"><span class="num">33.</span>System Settings — ตั้งค่าระบบ</h3>
+<div class="meta"><span class="tag url">/backend/settings/system</span><span class="tag">ตั้งค่า</span></div>
+<p class="lead">ศูนย์รวมการตั้งค่าระบบ แบ่งเป็นกลุ่มการ์ด (กดเข้าไปแก้ไขแต่ละกลุ่ม)</p>
+<div class="card">
+<div class="scroll"><table>
+<tr><th>กลุ่มตั้งค่า</th><th>รายละเอียด</th></tr>
+<tr><td>สำรองข้อมูล</td><td>ตั้งค่าการสำรองข้อมูลอัตโนมัติ</td></tr>
+<tr><td>การคำนวณ</td><td>ทศนิยม, อัตราภาษี, วิธีคำนวณต้นทุน</td></tr>
+<tr><td>ข้อมูลบริษัท</td><td>ชื่อบริษัท โลโก้ ที่อยู่ สำหรับออกเอกสาร</td></tr>
+<tr><td>ตั้งค่าเอกสาร</td><td>เฮดเดอร์/ฟุตเตอร์ รูปแบบเลขที่เอกสาร เงื่อนไข</td></tr>
+<tr><td>อัตราแลกเปลี่ยน</td><td>แหล่งข้อมูลอัตราแลกเปลี่ยนและการนำเข้ารายวัน</td></tr>
+<tr><td>ตั้งค่าทั่วไป</td><td>ชื่อแอป ภาษา สกุลเงิน รูปแบบวันที่ ธีมสี</td></tr>
+<tr><td>การแจ้งเตือน</td><td>อีเมลแจ้งเตือน และสินค้าใกล้หมด</td></tr>
+<tr><td>Quotation Template Mapping</td><td>keyword mapping สำหรับแนะนำเทมเพลตจากชื่อ item</td></tr>
+</table></div>
+<p style="margin:8px 0 0;color:var(--muted);font-size:14px">ด้านบนมีลิงก์ไป <b>สถานะเอกสาร</b> และ <b>Theme Preview</b></p>
+</div>
+<figure class="shot"><img src="images/adm-33-system.png" alt="System Settings" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/adm-33-system.png</div></div><figcaption>รูปที่ 33 — ตั้งค่าระบบ</figcaption></figure>
+
+<h3 id="adm-docstatus"><span class="num">34.</span>Document Statuses — จัดการสถานะเอกสาร</h3>
+<div class="meta"><span class="tag url">/backend/settings/system/document-statuses</span></div>
+<p class="lead">กำหนดชื่อ สี และลำดับของสถานะ แยกตามประเภทเอกสาร</p>
+<div class="card">
+<ol class="steps">
+<li>เลือกประเภทเอกสาร: ใบเสนอราคา / ใบสั่งขาย / ใบแจ้งหนี้</li>
+<li>เพิ่มสถานะใหม่ผ่านฟอร์ม: status_key (ใช้ a–z, 0–9, _), ชื่อแสดงผล, สี, ลำดับ, เปิดใช้งาน</li>
+</ol>
+<ul class="fields">
+<li><b>ใบเสนอราคา:</b> แบบร่าง, ส่งแล้ว, อนุมัติ, ปฏิเสธ, หมดอายุ, สร้างใบสั่งขายแล้ว</li>
+<li><b>ใบสั่งขาย:</b> แบบร่าง, ยืนยัน, กำลังดำเนินการ, จัดส่งแล้ว, ส่งถึงแล้ว, ยกเลิก</li>
+<li><b>ใบแจ้งหนี้:</b> แบบร่าง, ส่งแล้ว, ชำระบางส่วน, ชำระแล้ว, เกินกำหนด, ยกเลิก</li>
+</ul>
+<div class="callout c-warn" style="margin:6px 0 0"><b>ข้อควรระวัง</b>สถานะหลักของระบบ (core status) ลบไม่ได้ แต่แก้ชื่อ/สี/เปิด-ปิดได้</div>
+</div>
+<figure class="shot"><img src="images/adm-34-document-statuses.png" alt="Document Statuses" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/adm-34-document-statuses.png</div></div><figcaption>รูปที่ 34 — จัดการสถานะเอกสาร</figcaption></figure>
+
+<h3 id="adm-audit"><span class="num">35.</span>Audit Logs</h3>
+<div class="meta"><span class="tag url">/backend/shipments/audit-logs</span><span class="tag">ตรวจสอบ</span></div>
+<p class="lead">บันทึกการเปลี่ยนแปลงทั้งหมดในระบบ สำหรับตรวจสอบย้อนหลัง</p>
+<div class="card">
+<ul class="fields">
+<li><b>คอลัมน์:</b> When (เวลา), User (ผู้ทำ), Job No, Entity, Action, Module</li>
+<li><b>Entity ที่ติดตาม:</b> shipment_job, cash_request, invoice, job_expense, customs_entry, document, container</li>
+<li><b>Action:</b> created, updated, deleted, status_changed, approve, save, finance_submit, uploaded, downloaded</li>
+</ul>
+</div>
+<figure class="shot"><img src="images/adm-35-audit-logs.png" alt="Audit Logs" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ph" style="display:none"><div class="ic">🖼️</div><div>วางรูปหน้าจอที่นี่</div><div class="fn">images/adm-35-audit-logs.png</div></div><figcaption>รูปที่ 35 — Audit Logs</figcaption></figure>
+
+<!-- ===================== SHOT LIST ===================== -->
+<h2 class="group">ภาคผนวก</h2>
+<h3 id="shotlist">รายการรูปประกอบ (Shot list)</h3>
+<p class="lead">รูปหน้าจอทั้งหมด <b>ถ่ายและใส่ให้เรียบร้อยแล้ว</b> (เก็บในโฟลเดอร์ <code>images/</code>) ตารางด้านล่างเป็นดัชนีอ้างอิงว่าไฟล์ไหนคือหน้าใด หากต้องการถ่ายใหม่/อัปเดต ให้บันทึกไฟล์ PNG ทับด้วยชื่อเดิมในโฟลเดอร์ <code>images/</code> รูปในคู่มือจะเปลี่ยนตามอัตโนมัติ</p>
+<div class="callout c-tip"><b>อยากถ่ายใหม่เอง:</b> เปิดหน้านั้นในเบราว์เซอร์ → กด <code>Win + Shift + S</code> (Snipping Tool) ครอบพื้นที่เนื้อหา → บันทึกทับเป็น PNG ชื่อเดิมในโฟลเดอร์ <code>backend/docs/manual/images/</code></div>
+<div class="scroll"><table>
+<tr><th>#</th><th>ชื่อไฟล์</th><th>หน้า</th><th>URL</th></tr>
+<tr><td>1</td><td class="mono">op-01-dashboard.png</td><td>Dashboard</td><td class="mono">/backend/dashboard</td></tr>
+<tr><td>2</td><td class="mono">op-02-crm-dashboard.png</td><td>CRM Dashboard</td><td class="mono">/backend/crm</td></tr>
+<tr><td>3</td><td class="mono">op-03-crm-customers.png</td><td>CRM Customers</td><td class="mono">/backend/crm/customers</td></tr>
+<tr><td>4</td><td class="mono">op-04-inquiry-pipeline.png</td><td>Inquiry Pipeline</td><td class="mono">/backend/crm/inquiries</td></tr>
+<tr><td>5</td><td class="mono">op-05-quotations.png</td><td>Quotations (รายการ)</td><td class="mono">/backend/quotation</td></tr>
+<tr><td>5.1</td><td class="mono">op-05b-quotation-create.png</td><td>สร้างใบเสนอราคา</td><td class="mono">/backend/quotation/create</td></tr>
+<tr><td>6</td><td class="mono">op-06-quotation-activities.png</td><td>Quotation Activities</td><td class="mono">/backend/quotation/activities</td></tr>
+<tr><td>7</td><td class="mono">op-07-sales-orders.png</td><td>Sales Orders</td><td class="mono">/backend/sales/orders</td></tr>
+<tr><td>8</td><td class="mono">op-08-sales-invoices.png</td><td>Sales Invoices</td><td class="mono">/backend/sales/invoices</td></tr>
+<tr><td>9</td><td class="mono">op-09-shipment-jobs.png</td><td>Shipment Jobs</td><td class="mono">/backend/shipments</td></tr>
+<tr><td>10</td><td class="mono">op-10-reports.png</td><td>Reports</td><td class="mono">/backend/shipments/reports</td></tr>
+<tr><td>11</td><td class="mono">fin-11-expenses.png</td><td>Expenses (OCR)</td><td class="mono">/backend/expenses</td></tr>
+<tr><td>12</td><td class="mono">fin-12-tax-documents.png</td><td>Tax Documents</td><td class="mono">/backend/sales/tax-documents</td></tr>
+<tr><td>13</td><td class="mono">fin-13-intake.png</td><td>เบิกเงิน</td><td class="mono">/backend/finance/cash-requests/intake</td></tr>
+<tr><td>14</td><td class="mono">fin-14-approvals.png</td><td>อนุมัติเงิน</td><td class="mono">/backend/approvals/money</td></tr>
+<tr><td>15</td><td class="mono">fin-15-disbursements.png</td><td>จ่ายเงิน</td><td class="mono">/backend/finance/cash-requests/disbursements</td></tr>
+<tr><td>16</td><td class="mono">fin-16-settlements.png</td><td>เคลียร์เงิน</td><td class="mono">/backend/finance/cash-requests/settlements</td></tr>
+<tr><td>17</td><td class="mono">fin-17-shipment-expenses.png</td><td>Shipment Expenses</td><td class="mono">/backend/shipments/expenses</td></tr>
+<tr><td>18</td><td class="mono">fin-18-register.png</td><td>ทะเบียนเบิกเงิน</td><td class="mono">/backend/finance/cash-requests/register</td></tr>
+<tr><td>19</td><td class="mono">fin-19-shipment-invoices.png</td><td>Shipment Invoices</td><td class="mono">/backend/shipments/invoices</td></tr>
+<tr><td>20</td><td class="mono">md-20-customers.png</td><td>Customers</td><td class="mono">/backend/master/customers</td></tr>
+<tr><td>21</td><td class="mono">md-21-suppliers.png</td><td>Suppliers</td><td class="mono">/backend/master/suppliers</td></tr>
+<tr><td>22</td><td class="mono">md-22-service-groups.png</td><td>Service Groups</td><td class="mono">/backend/master/service-groups</td></tr>
+<tr><td>23</td><td class="mono">md-23-products.png</td><td>Products &amp; Services</td><td class="mono">/backend/master/products</td></tr>
+<tr><td>24</td><td class="mono">md-24-cost-types.png</td><td>Cost Types</td><td class="mono">/backend/master/cost-types</td></tr>
+<tr><td>25</td><td class="mono">md-25-shipping-lines.png</td><td>Shipping Lines</td><td class="mono">/backend/master/shipping-lines</td></tr>
+<tr><td>26</td><td class="mono">md-26-ports.png</td><td>Ports</td><td class="mono">/backend/master/ports</td></tr>
+<tr><td>27</td><td class="mono">md-27-document-types.png</td><td>Document Types</td><td class="mono">/backend/master/document-types</td></tr>
+<tr><td>28</td><td class="mono">md-28-container-types.png</td><td>Container Types</td><td class="mono">/backend/master/container-types</td></tr>
+<tr><td>29</td><td class="mono">md-29-job-statuses.png</td><td>Job Statuses</td><td class="mono">/backend/master/job-statuses</td></tr>
+<tr><td>30</td><td class="mono">md-30-customs-statuses.png</td><td>Customs Statuses</td><td class="mono">/backend/master/customs-statuses</td></tr>
+<tr><td>31</td><td class="mono">adm-31-users.png</td><td>Users</td><td class="mono">/backend/settings/users</td></tr>
+<tr><td>32</td><td class="mono">adm-32-roles.png</td><td>Roles</td><td class="mono">/backend/settings/roles</td></tr>
+<tr><td>33</td><td class="mono">adm-33-system.png</td><td>System Settings</td><td class="mono">/backend/settings/system</td></tr>
+<tr><td>34</td><td class="mono">adm-34-document-statuses.png</td><td>Document Statuses</td><td class="mono">/backend/settings/system/document-statuses</td></tr>
+<tr><td>35</td><td class="mono">adm-35-audit-logs.png</td><td>Audit Logs</td><td class="mono">/backend/shipments/audit-logs</td></tr>
+</table></div>
+<p style="color:var(--muted);font-size:13px;margin-top:10px">หมายเหตุ: คู่มือฉบับนี้ครอบคลุมครบทั้ง 35 เมนู รวมโมดูล CRM ที่พัฒนาใหม่ (CRM Dashboard, CRM Customers, Inquiry Pipeline) เรียบร้อยแล้ว</p>
+
+</div><!-- /container -->
+
+<footer>
+คู่มือการใช้งานระบบ BOP Express — จัดทำโดยการสำรวจระบบจริงในฐานะ Super Admin · ปรับปรุงล่าสุด 15 กรกฎาคม 2569 ·
+ไฟล์นี้อยู่ที่ <code>backend/docs/manual/index.html</code> พร้อมรูปประกอบครบทุกหน้าในโฟลเดอร์ <code>images/</code>
+</footer>
+</div><!-- /main -->
+</div><!-- /wrap -->
+
+<script>
+// active TOC highlight
+(function(){
+  var links=[].slice.call(document.querySelectorAll('.toc a'));
+  var map={};links.forEach(function(a){var id=a.getAttribute('href').slice(1);map[id]=a;});
+  var obs=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(l){l.style.background='';l.style.color='';});
+        var a=map[e.target.id];
+        if(a){a.style.background='#1c2138';a.style.color='#fff';}
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px'});
+  document.querySelectorAll('h3[id],section[id]').forEach(function(el){obs.observe(el);});
+  // close mobile menu on link click
+  links.forEach(function(a){a.addEventListener('click',function(){document.getElementById('toc').classList.remove('open');});});
+})();
+</script>
+</body>
+</html>

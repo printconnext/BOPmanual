@@ -1,0 +1,54 @@
+# BOP Express — Manual working notes
+
+App title: BOP Express — Operations Workspace. User shown: ณรรท เมธีนิธิกร (Super Admin). Top-right: Profile, Logout. Left sidebar groups: OPERATIONS, FINANCE, MASTER DATA, ADMINISTRATION. Collapse button on sidebar. Dates shown in Thai Buddhist year (พ.ศ.).
+
+## OPERATIONS
+1. **Dashboard** (/backend/dashboard): Operations Dashboard. KPI cards: ALL JOBS, IMPORT, EXPORT, ETA IN 3 DAYS, MISSING DOCUMENTS, CUSTOMS PENDING. Button "Open Shipment Workspace". Panels: Latest Documents (Job No/Type/File + "Missing docs report" link), Latest Status Changes (+ "Audit log" link).
+2. **CRM Dashboard** (/backend/crm): ❌ ERROR DatabaseException #1146 Table 'bopapp.crm_inquiries' doesn't exist. BROKEN.
+3. **CRM Customers** (/backend/crm/customers): List "Customer 360". Cols: Code, Customer, Contact, Phone, Status. Search box (customer/code/tax ID). Button "Create Customer". Per-row "Customer 360" button.
+4. **Inquiry Pipeline** (/backend/crm/inquiries): ❌ ERROR same crm_inquiries missing. BROKEN.
+5. **Quotations** (/backend/quotation): "รายการใบเสนอราคา". Cols: เลขที่(QTxxxx), วันที่, ลูกค้า, ยอดรวม, สถานะ (แบบร่าง grey / ส่งแล้ว blue / หมดอายุ yellow). Button "+ สร้างใบเสนอราคา". Row actions: view(eye), edit(only draft), delete(only draft), print. Bulk checkboxes.
+   - **Create** (/backend/quotation/create): fields เลขที่(auto), วันที่*, ใช้ได้ถึง*, ลูกค้า*(dropdown), เรื่อง, ประเภทงาน(dropdown). Section "ข้อมูลประกอบการเสนอราคา / BOP checklist" (ประเภทธุรกิจ, สิทธิประโยชน์ที่ถือครอง...). Right panel สรุปยอด: ยอดรวม, ส่วนลด%, ส่วนลด, หลังหักส่วนลด, VAT%(7), ภาษีมูลค่าเพิ่ม, ยอดสุทธิ. Buttons โหลดตัวอย่างงาน BOP / บันทึก / บันทึกใบเสนอราคา / ยกเลิก. Also ประวัติการซื้อสินค้า panel + line items (products) below.
+6. **Quotation Activities** (/backend/quotation/activities): Manage quotation item notes & nested activities. Quotation selector. Buttons: ส่งอนุมัติ/Submit approval, จัดการ Templates, Open quotation. Table NAME (activity, root note, costs, activities count) / ESTIMATED-ACTUAL COST (Plan vs Actual) / ACTIONS (add cost, +activity). Note "Shipment jobs should start from approved quotations."
+7. **Sales Orders** (/backend/sales/orders): "รายการใบสั่งขาย". Cols เลขที่(SOxxxx), วันที่, ลูกค้า, ยอดรวม, สถานะ (ยกเลิก red). Button "+ สร้างใบสั่งขาย". Row view. Created from approved quotations or manual.
+8. **Sales Invoices** (/backend/sales/invoices): "ใบแจ้งหนี้". KPI: ยอดค้างชำระทั้งหมด, ใกล้ครบกำหนด(7วัน), ยอดใกล้ครบกำหนด, เกินกำหนด. Button filter "ค้างชำระ". Cols เลขที่, วันที่, ครบกำหนด, ลูกค้า, ประเภทเอกสาร, ยอดรวม, ชำระแล้ว, คงค้าง, สถานะ(เกินกำหนด red). Row actions: view, print, record payment($ green), void(red). Invoice aging + payment collection + tax-doc readiness.
+9. **Shipment Jobs** (/backend/shipments): Filters Search(Job/BL/quotation), Shipment Type, Customer, Status, ETA Range From/To, ETD Range From/To, Apply Filters/Reset. Jobs created from approved quotations (no direct Create button).
+10. **Reports** (/backend/shipments/reports): Shipment Reports. Report dropdown (e.g. "Shipment jobs by date"), Date From, Date To, Run. Export-friendly table layout.
+
+## FINANCE
+Cash-request lifecycle (เบิกเงินทดรอง) flows across several screens sharing status stages: ร่าง → รออนุมัติ → อนุมัติแล้ว → บัญชีรอยืนยันยอด → ยืนยันยอดแล้ว → จ่ายเงินแล้ว → เคลียร์บางส่วน → เคลียร์แล้ว (also ยกเลิก). Each screen shows the same 4 KPI cards (รายการตามตัวกรอง / ยอดขอเบิก / ยอดอนุมัติ-จ่ายแล้ว / ยอดค้างเคลียร์) + status group chips + filters (Shipment Job/BL/Booking/Quotation, ค้นหา, ลูกค้า, ต้องใช้เงินตั้งแต่, ถึงวันที่, กรอง/รีเซ็ต). PCR = cash request number.
+1. **Expenses** (/backend/expenses) = Expense Import. OCR Provider: openai (OPENAI_API_KEY configured). Upload Expense Document: Choose File + Auto OCR toggle + Upload. Supported PDF/JPG/PNG/WEBP/TXT/CSV max 20MB. "Imported Documents (OCR Queue)" table: #, FILE, UPLOADED, OCR, CONFIDENCE, VENDOR, DOC NO, DATE, TOTAL, ITEMS, DRAFT, ACTION.
+2. **Tax Documents** (/backend/sales/tax-documents) = ใบเสร็จ/ใบกำกับภาษี. Quick ranges: เดือนนี้/เดือนก่อน/3เดือนย้อนหลัง/ปีนี้/ทั้งหมด. Filters เดือน, ตั้งแต่/ถึงวันที่, ประเภทเอกสาร, ลูกค้า. KPI: เอกสารทั้งหมด, ยอดรวม, VAT, ใบแจ้งหนี้/ใบกำกับภาษี, ใบเสร็จ/ใบกำกับภาษี, ใบเสร็จรับเงิน. Table รายการเอกสารที่ออกแล้ว: #, เลขที่เอกสาร, วันที่, ประเภท, ลูกค้า, เลขผู้เสียภาษี, ยอดเงิน, VAT, อ้างอิง.
+3. **เบิกเงิน** (/backend/finance/cash-requests/intake): "เตรียมและส่งคำขอเบิกเงินทดรองสำหรับงาน Shipment". Prepare & submit cash-advance requests. Status chips ร่าง/รออนุมัติ/บัญชีรอยืนยันยอด/ทั้งหมด.
+4. **อนุมัติเงิน** (/backend/approvals/money) = Money Approvals. "Review what each cash request is for... approve only the amount finance should release." Table shows request no, รายละเอียดการใช้เงิน, กับใคร/งานไหน, แผน/ขออนุมัติ/อนุมัติแล้ว..., Action = ยอดอนุมัติ input + หมายเหตุ + approve. Full status chips.
+5. **จ่ายเงิน** (/backend/finance/cash-requests/disbursements): "คิวรายการที่อนุมัติแล้ว รอยืนยันยอด และรอฝ่ายบัญชีจ่ายเงิน". Accounting confirms + pays. Table Action: หมายเหตุบัญชี.
+6. **เคลียร์เงิน** (/backend/finance/cash-requests/settlements): "ติดตามเงินที่จ่ายแล้วและรอบิลหรือเงินคืนมาเคลียร์". Reconcile advance with actual bills/refunds. Cols เคลียร์/คืนเงิน/ค้างเคลียร์, Action เงินคืนสะสม input.
+7. **Shipment Expenses** (/backend/shipments/expenses): "Track operational costs by job, customer, and payment state." Filters Customer/Payment Status/Date From/To. Table Date, Job No, Customer, Type, Description, Vendor, Amount, Status(paid).
+8. **ทะเบียนเบิกเงิน** (/backend/finance/cash-requests/register): "รายการเบิกเงินทั้งหมดสำหรับตรวจสอบย้อนหลัง". Master audit register of ALL cash requests across every status.
+9. **Shipment Invoices** (/backend/shipments/invoices): "Manage invoices linked directly to shipment jobs." Filters Customer/Status/Date. Table Invoice No, Date, Job No, Customer, Total, Status(overdue).
+
+## MASTER DATA (shared pattern)
+All master pages share: breadcrumb Dashboard/Master Data/<name>; card "Master Records" ("Filter the list below or create a new record"); Search box; Status filter (All/Active/Inactive); Rows-per-page (10/15/25/50/100); Apply filters / Reset; "+ Create" button (top-right) → /create form; each row has Edit + Delete (Delete = submit/confirm). Columns vary per entity (below).
+
+1. **Customers** (/master/customers): Create btn "เพิ่มลูกค้า". Cols Code, Customer, Contact, Phone, Email, Status. ~179 records.
+2. **Suppliers** (/master/suppliers): Cols Code, Supplier, Phone, Website, Sales Contact, Status. ~132 records.
+3. **Service Groups** (/master/service-groups): Cols Code, Name, GL, VAT, Expense, Credit, WHT, Status. Accounting-mapping flags per group. 7 records (ADV Credit Advances, ATL Additional, CST Costs, ERN Deposit Container, EX-P ค่าใช้จ่ายบริษัท, SLC Local Charges, SRV ค่าบริการ).
+4. **Products** (/master/products) = Products and Services. Create btn "Add Product / Service". Cols CODE, NAME, ENGLISH NAME, SERVICE GROUP, CURRENCY, UNIT, SELL PRICE, COST, VAT, STATUS. Large catalog (240+ service/charge items — freight, customs, THC, D/O, handling, etc.). This is the rate/charge catalog used in quotations.
+5. **Cost Types** (/master/cost-types) = ประเภทต้นทุน. Create "เพิ่มประเภทต้นทุน". Cols รหัส, ชื่อประเภทต้นทุน, รหัสบัญชี, รายละเอียด, สถานะ. 6 (SHP ค่าขนส่ง, LAB ค่าแรง, OVH ค่าโสหุ้ย, PKG บรรจุภัณฑ์, MAT วัตถุดิบ, OTH อื่นๆ).
+6. **Shipping Lines** (/master/shipping-lines): Cols Code, Name, SCAC, Contact, Status. 6 (CMA CGM, Evergreen, Hapag-Lloyd, Maersk, MSC, ONE).
+7. **Ports** (/master/ports): Cols Code, Port, Country, Type(sea/air), Status. For POL/POD routing. ~7 (Bangkok, Laem Chabang, Hong Kong, Rotterdam, Shanghai, Singapore...).
+8. **Document Types** (/master/document-types): Cols Code, Name, Category(transport/customs/commercial/finance), Required(flag), Status. 12 (BL, DO, SI, Arrival Notice, CO, Customs/Export/Import Entry, Customs Release, Invoice, Packing List, Receipt, Tax Invoice).
+9. **Container Types** (/master/container-types): Cols Code, Name, ISO, Size(ft), Status. 6 (20GP, 20RF, 40GP, 40HC, 40RF, 45HC).
+10. **Job Statuses** (/master/job-statuses): Cols Code, Status, Order, Closed(flag), Active. Defines shipment job lifecycle. 9 (New→Booking→Documentation→In Transit→Arrived→Customs Clearance→Delivered→Closed/Cancelled).
+11. **Customs Statuses** (/master/customs-statuses): Cols Code, Status, Order, Closed, Active. 8 (Not Started→Preparing→Submitted→Under Examination→Duty Pending→Hold→Released/Not Required).
+
+## ADMINISTRATION
+1. **Users** (/settings/users) = User Management. Filters Search(username/full name/email), Role(All/Super Admin/admin/manager/Staff/operation/accounting/Sales and Marketing), Status, Rows, Apply/Reset. Button "Create User". Cols USERNAME, FULL NAME, EMAIL, ROLE, STATUS, LAST LOGIN, ACTIONS (Edit / Disable / Delete). 23 users. Edit user = where password reset / role change happens.
+2. **Roles** (/settings/roles) = จัดการบทบาท. "เพิ่มบทบาทใหม่". Cols #, ชื่อบทบาท, รายละเอียด, จัดการ. 7 roles: 1 Super Admin (สิทธิ์ทุกอย่าง), 2 admin, 3 manager, 4 Staff, 5 operation, 6 accounting, 7 Sales and Marketing. Each role has permission set.
+3. **System Settings** (/settings/system) = ตั้งค่าระบบ. Top links: สถานะเอกสาร, Theme Preview. Setting group cards: สำรองข้อมูล(3), การคำนวณ(10: ทศนิยม/อัตราภาษี/วิธีคำนวณต้นทุน), ข้อมูลบริษัท(12: โลโก้/ที่อยู่ for docs), ตั้งค่าเอกสาร(30: เฮดเดอร์/ฟุตเตอร์/รูปแบบเลขที่เอกสาร/เงื่อนไข), อัตราแลกเปลี่ยน(11), ตั้งค่าทั่วไป(11: ชื่อแอป/ภาษา/สกุลเงิน/รูปแบบวันที่/ธีมสี), การแจ้งเตือน(6: email/สินค้าใกล้หมด), Quotation Template Mapping(1: keyword mapping).
+4. **Document Statuses** (/settings/system/document-statuses) = จัดการสถานะเอกสาร. Configure status labels/colors/order per doc type. Add-status form: status_key(a-z,0-9,_), ชื่อแสดงผล, สี, ลำดับ, เปิดใช้งาน. Core statuses can't be deleted (rename/recolor/toggle only). ใบเสนอราคา: แบบร่าง/ส่งแล้ว/อนุมัติ/ปฏิเสธ/หมดอายุ/สร้างใบสั่งขายแล้ว. ใบสั่งขาย: แบบร่าง/ยืนยัน/กำลังดำเนินการ/จัดส่งแล้ว/ส่งถึงแล้ว/ยกเลิก. ใบแจ้งหนี้: แบบร่าง/ส่งแล้ว/ชำระบางส่วน/ชำระแล้ว/เกินกำหนด/ยกเลิก.
+5. **Audit Logs** (/shipments/audit-logs). Cols When, User, Job No, Entity, Action, Module. Tracks entities shipment_job/cash_request/invoice/job_expense/customs_entry/document/container; actions created/updated/deleted/status_changed/approve/save/finance_submit/uploaded/downloaded.
+
+## KEY WORKFLOW (for intro)
+Quotation (สร้าง→ส่งอนุมัติผ่าน Quotation Activities→อนุมัติ) → Sales Order → Shipment Job (created from approved quotation) → operations (documents, customs, containers) → Finance cash-request cycle (เบิก→อนุมัติ→จ่าย→เคลียร์) + Shipment Expenses → Invoice (Sales/Shipment Invoices) → Tax Documents. Master Data feeds dropdowns; Administration controls users/roles/statuses/settings.
+
